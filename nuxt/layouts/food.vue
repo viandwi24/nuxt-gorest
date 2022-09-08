@@ -1,12 +1,5 @@
 <script lang="ts" setup>
-import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/vue'
-import { AxiosError } from 'axios'
+import { TransitionRoot } from '@headlessui/vue'
 import { useCart } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
 
@@ -15,26 +8,23 @@ const auth = useAuthStore()
 
 // is login
 const loginModalIsOpen = ref(false)
-const email = ref('test@mail.com')
-const password = ref('password')
-const closeModal = () => {
+const closeLoginModal = () => {
   loginModalIsOpen.value = false
 }
-const openModal = () => {
+const openLoginModal = () => {
   loginModalIsOpen.value = true
-}
-const login = async () => {
-  try {
-    await auth.login(email.value, password.value)
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      return alert('Check your email and password again')
-    }
-  }
-  closeModal()
 }
 const logout = async () => {
   await auth.logout()
+}
+
+// register
+const registerModalIsOpen = ref(false)
+const closeRegisterModal = () => {
+  registerModalIsOpen.value = false
+}
+const openRegisterModal = () => {
+  registerModalIsOpen.value = true
 }
 
 // cart
@@ -68,7 +58,8 @@ const toggleCart = () => {
           />
           <div class="flex space-x-4">
             <template v-if="!auth.isLogged">
-              <Button text="Login" size="sm" @click="openModal" />
+              <Button text="Register" size="sm" @click="openRegisterModal" />
+              <Button text="Login" size="sm" @click="openLoginModal" />
             </template>
             <template v-else>
               <div class="flex items-center">
@@ -142,73 +133,21 @@ const toggleCart = () => {
       </div>
     </div>
     <!-- modals -->
-    <TransitionRoot appear :show="loginModalIsOpen" as="template">
-      <Dialog as="div" class="relative z-10" @close="closeModal">
-        <TransitionChild
-          as="template"
-          enter="duration-300 ease-out"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="duration-200 ease-in"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black bg-opacity-25" />
-        </TransitionChild>
-        <div class="fixed inset-0 overflow-y-auto">
-          <div
-            class="flex min-h-full items-center justify-center p-4 text-center"
-          >
-            <TransitionChild
-              as="template"
-              enter="duration-300 ease-out"
-              enter-from="opacity-0 scale-95"
-              enter-to="opacity-100 scale-100"
-              leave="duration-200 ease-in"
-              leave-from="opacity-100 scale-100"
-              leave-to="opacity-0 scale-95"
-            >
-              <DialogPanel
-                class="w-full max-w-md transform overflow-hidden rounded-2xl bg-slate-800 p-6 text-left align-middle shadow-xl transition-all"
-              >
-                <div class="flex justify-between">
-                  <DialogTitle
-                    as="h3"
-                    class="text-2xl font-bold leading-6 text-gray-100"
-                  >
-                    LOGIN
-                  </DialogTitle>
-                  <button
-                    class="text-red-500 font-bold text-4xl"
-                    @click="closeModal"
-                  >
-                    x
-                  </button>
-                </div>
-                <div class="mt-2">
-                  <Card class="mb-4">
-                    <CardContent>
-                      <div class="flex flex-col space-y-2 mb-4">
-                        <label>Email</label>
-                        <FormTextInput v-model="email" class="w-full" />
-                      </div>
-                      <div class="flex flex-col space-y-2 mb-4">
-                        <label>Password</label>
-                        <FormTextInput
-                          v-model="password"
-                          type="password"
-                          class="w-full"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Button text="Login" @click="login" />
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </Dialog>
+    <TransitionRoot
+      v-if="loginModalIsOpen"
+      :show="loginModalIsOpen"
+      appear
+      as="template"
+    >
+      <ModalLogin @close="closeLoginModal" />
+    </TransitionRoot>
+    <TransitionRoot
+      v-if="registerModalIsOpen"
+      :show="registerModalIsOpen"
+      appear
+      as="template"
+    >
+      <ModalRegister @close="closeRegisterModal" />
     </TransitionRoot>
   </div>
 </template>

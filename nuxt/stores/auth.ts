@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
-    login(email: string, password: string) {
+    login(email: string, password: string, fetchMe = true) {
       const http = useHttp()
       return new Promise((resolve, reject) => {
         http({
@@ -55,9 +55,57 @@ export const useAuthStore = defineStore('auth', {
               this.accessToken = response.data.accessJWT
               this.refreshToken = response.data.refreshJWT
               this.updateToken()
-              this.fetchMe()
-                .then(() => resolve(true))
-                .catch(() => reject(new Error('Error fetching user')))
+              if (fetchMe) {
+                this.fetchMe()
+                  .then(() => resolve(true))
+                  .catch(() => reject(new Error('Error fetching user')))
+              } else {
+                resolve(true)
+              }
+            }
+          })
+          .catch((error) => {
+            reject(error)
+          })
+      })
+    },
+    register(
+      email: string,
+      password: string,
+      info: { firstName: string; lastName: string }
+    ) {
+      const http = useHttp()
+      return new Promise((resolve, reject) => {
+        http({
+          method: 'POST',
+          url: 'register',
+          data: {
+            email,
+            password,
+          },
+        })
+          .then((response) => {
+            if (response.status === 201) {
+              this.login(email, password, false)
+                .then(() => {
+                  http({
+                    method: 'POST',
+                    url: 'users',
+                    data: info,
+                  })
+                    .then(async () => {
+                      await this.fetchMe()
+                      return resolve(true)
+                    })
+                    .catch(() => {
+                      reject(new Error('Error creating user'))
+                    })
+                })
+                .catch(() => {
+                  reject(new Error('Error logging in'))
+                })
+            } else {
+              reject(new Error('Error registering'))
             }
           })
           .catch((error) => {
