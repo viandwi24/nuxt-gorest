@@ -1,0 +1,21 @@
+FROM golang:1.19-alpine
+
+RUN apk add build-base
+
+WORKDIR /usr/src/app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+ENV GOOS linux
+ENV CGO_ENABLED=1
+ENV GOARCH amd64
+
+RUN go build -o /gorest
+
+EXPOSE 8999
+
+CMD ["/gorest"]

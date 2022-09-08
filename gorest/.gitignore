@@ -1,0 +1,8 @@
+# Ignored files and directories #
+#################################
+*.log
+# .env
+vendor/
+crosscompile*.sh
+gorest
+migrate
